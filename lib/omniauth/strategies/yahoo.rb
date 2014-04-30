@@ -48,7 +48,10 @@ module OmniAuth
      
       def raw_info
         # This is a public API and does not need signing or authentication
-        request = "https://social.yahooapis.com/v1/user/#{uid}/profile?format=json"
+        # request = "https://social.yahooapis.com/v1/user/#{uid}/profile?format=json"
+        # switch to YQL till yahoo fixes the socialapis
+        yql = "select * from social.profile where guid='#{uid}'"
+        request = "https://query.yahooapis.com/v1/yql?q=#{encode_uri_component(yql)}&format=json"
         @raw_info ||= MultiJson.decode(access_token.get(request).body)
       rescue ::Errno::ETIMEDOUT
         raise ::Timeout::Error
@@ -58,6 +61,23 @@ module OmniAuth
       
       def user_info
         @user_info ||= raw_info.nil? ? {} : raw_info["profile"]
+      end
+
+      def gsub(input, replace)
+        search = Regexp.new(replace.keys.map{|x| "(?:#{Regexp.quote(x)})"}.join('|'))
+        input.gsub(search, replace)
+      end
+
+      def encode_uri_component(val)
+        gsub(CGI.escape(val.to_s),
+             '+' => '%20',
+             '%21' => '!',
+             '%27' => "'",
+             '%28' => '(',
+             '%29' => ')',
+             '%2A' => '*',
+             '%7E' => '~'
+            )
       end
     end
   end
