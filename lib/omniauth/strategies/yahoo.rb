@@ -17,8 +17,7 @@ module OmniAuth
       }
 
       uid { 
-        # access_token.params['xoauth_yahoo_guid']
-        user_info['guid']
+        access_token.params['xoauth_yahoo_guid']
       }
       
       info do 
@@ -61,7 +60,7 @@ module OmniAuth
       # Provide the "Profile" portion of the raw_info
       
       def user_info
-        @user_info ||= raw_info.nil? ? {} : raw_info["profile"]
+        @user_info ||= raw_info.nil? ? {} : raw_info['query']['results']["profile"]
       end
 
       def gsub(input, replace)
